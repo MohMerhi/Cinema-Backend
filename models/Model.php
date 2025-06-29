@@ -42,7 +42,13 @@ abstract class Model{
 
     }
 
+    public function delete(mysqli $mysqli, int $id){
+        $sql = sprintf("Delete From %s where %s = ?", static::$table, static::$primary_key );
+        $query = $mysqli->prepare($sql);
+        $query->bind_param("i", $id);
+        $query->execute();
 
+    }
 
     public static function sqlValueForm(&$values){
         $normalArray = [];
@@ -50,10 +56,6 @@ abstract class Model{
             $normalArray[] = $key + " = ?";
         }
         return $normalArray.implode(",");
-    }
-
-    public static function getDatatype($param){
-        
     }
 
     public static function bindToQuery($mysqli,&$query,&$values){
