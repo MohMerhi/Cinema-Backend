@@ -1,5 +1,7 @@
 <?php
 
+use Vtiful\Kernel\Format;
+
 abstract class Model{
     protected static string $table;
 
@@ -27,21 +29,57 @@ abstract class Model{
     }
 
     public function update(mysqli $mysqli, array $values, int $id){
-        $updateValues = static::associativeToString($values);
-        $sql = sprintf("Update %s set ? where %s = ?", 
+        $valuesInQuery = static::sqlValueForm($values);
+        $sql = sprintf("Update %s set %s where %s = ?", 
             static::$table,
-            $updateValues,
+            $valuesInQuery,
             $id);
-        $query 
-
+        $query = $mysqli->prepare($sql);
+        static::bindToQuery($mysqli,$query,$values);
+        $query->bind_param('i',$id);
+        $query->execute();
+        $data = $query->get_result()->fetch_assoc();
 
     }
 
-    public static function associativeToString($data){
+
+
+    public static function sqlValueForm(&$values){
         $normalArray = [];
-        foreach($data as $key => $value){
-            $normalArray[] = $key + " = " + $value;
+        foreach($values as $key => $value){
+            $normalArray[] = $key + " = ?";
         }
         return $normalArray.implode(",");
+    }
+
+    public static function getDatatype($param){
+        
+    }
+
+    public static function bindToQuery($mysqli,&$query,&$values){
+        foreach($values as $key => $value){
+            if($value instanceof DateTime){
+                $s = 's';
+                $date = $value->format('Y-m-d');
+                $time = $value->format('H:i:s');
+                if($date == '1970-1-1'){
+                    $value = $date;
+                }
+                else{
+                    $value = $time;
+                }
+            }
+            else if(is_int($value)){
+                $s = 'i';
+
+            }
+            else if(is_float($value)){
+                $s = 'f';
+            }
+            else{
+                $s = 's';
+            }
+            $query->bind_param($s,$value);
+        } 
     }
 }
