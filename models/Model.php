@@ -60,18 +60,7 @@ abstract class Model{
 
     public static function bindToQuery($mysqli,&$query,&$values){
         foreach($values as $key => $value){
-            if($value instanceof DateTime){
-                $s = 's';
-                $date = $value->format('Y-m-d');
-                $time = $value->format('H:i:s');
-                if($date == '1970-1-1'){
-                    $value = $date;
-                }
-                else{
-                    $value = $time;
-                }
-            }
-            else if(is_int($value)){
+            if(is_int($value)){
                 $s = 'i';
 
             }
