@@ -28,8 +28,23 @@ abstract class Model{
         return $objects;
     }
 
+    public static function findByValues(mysqli $mysqli, array $values){
+        $valuesInQuery = static::sqlValueForm($values," and ");
+        $sql = sprintf("Select * from %s where %s",static::$table, $valuesInQuery);
+        
+        $query= $mysqli->prepare($sql);
+        static::bindToQuery($mysqli, $query,$values);
+        $query->execute();
+        $data = $query->get_result();
+        $objects = [];
+        while($row = $data->fetch_assoc()){
+            $objects[] = new static($row);
+        }
+        return $objects;
+    }
+
     public function update(mysqli $mysqli, array $values, int $id){
-        $valuesInQuery = static::sqlValueForm($values);
+        $valuesInQuery = static::sqlValueForm($values,",");
         $sql = sprintf("Update %s set %s where %s = ?", 
             static::$table,
             $valuesInQuery,
@@ -42,7 +57,7 @@ abstract class Model{
 
     }
 
-    public function delete(mysqli $mysqli, int $id){
+    public static function delete(mysqli $mysqli, int $id){
         $sql = sprintf("Delete From %s where %s = ?", static::$table, static::$primary_key );
         $query = $mysqli->prepare($sql);
         $query->bind_param("i", $id);
@@ -57,17 +72,18 @@ abstract class Model{
         static::creationColumnForm($values, $columnNames, $columnValues);
         $sql = sprintf("INSERT INTO %s (%s) VALUES (%s)", static::$table, $columnNames, $columnValues);
         $query = $mysqli->prepare($sql);
+        
         static::bindToQuery($mysqli, $query, $values);
         $query->execute();
         
     }
 
-    public static function sqlValueForm(&$values){
+    public static function sqlValueForm(&$values, $separateString){
         $normalArray = [];
         foreach($values as $key => $value){
-            $normalArray[] = $key + " = ?";
+            $normalArray[] = $key." = ?";
         }
-        return implode(",",$normalArray);
+        return implode($separateString,$normalArray);
     }
 
     public static function creationColumnForm(&$values, &$columnNames, &$columnValues){
@@ -83,18 +99,21 @@ abstract class Model{
     }
 
     public static function bindToQuery($mysqli,&$query,&$values){
+        $type = "";
+        $params = [];
         foreach($values as $key => $value){
             if(is_int($value)){
-                $s = 'i';
+                $type = $type. 'i';
 
             }
             else if(is_float($value)){
-                $s = 'f';
+                $type = $type. 'f';
             }
             else{
-                $s = 's';
+                $type = $type. 's';
             }
-            $query->bind_param($s,$value);
+            $params[] = $value;
         } 
+        $query->bind_param($type,...$params);
     }
 }
