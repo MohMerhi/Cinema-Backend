@@ -75,6 +75,15 @@ class Movies extends Model{
     }
 
     public function toArray(){
-        return [$this->id, $this->title, $this->release_date];
+        return [
+            "id" => $this->id,
+            "title" => $this->title,
+            "release_date" => $this->release_date,
+            "description" => $this->description,
+            "poster" => $this->poster,
+            "trailer" => $this->trailer,
+            "studio" => $this->studio,
+            "movie_length"=> $this->movie_length,
+        ];
     }
 }

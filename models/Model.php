@@ -38,7 +38,7 @@ abstract class Model{
         static::bindToQuery($mysqli,$query,$values);
         $query->bind_param('i',$id);
         $query->execute();
-        $data = $query->get_result()->fetch_assoc();
+        //$data = $query->get_result()->fetch_assoc();
 
     }
 
@@ -50,12 +50,36 @@ abstract class Model{
 
     }
 
+    public static function create(mysqli $mysqli, $values){
+        
+        $columnNames = "";
+        $columnValues = "";
+        static::creationColumnForm($values, $columnNames, $columnValues);
+        $sql = sprintf("INSERT INTO %s (%s) VALUES (%s)", static::$table, $columnNames, $columnValues);
+        $query = $mysqli->prepare($sql);
+        static::bindToQuery($mysqli, $query, $values);
+        $query->execute();
+        
+    }
+
     public static function sqlValueForm(&$values){
         $normalArray = [];
         foreach($values as $key => $value){
             $normalArray[] = $key + " = ?";
         }
-        return $normalArray.implode(",");
+        return implode(",",$normalArray);
+    }
+
+    public static function creationColumnForm(&$values, &$columnNames, &$columnValues){
+        $columnArrayNames = [];
+        $columnArrayValues = [];
+        foreach($values as $key => $value){
+            $columnArrayNames[] = $key;
+            $columnArrayValues[] = "?";
+        }
+        $columnNames = implode(",", $columnArrayNames);
+        $columnValues = implode(",", $columnArrayValues);
+
     }
 
     public static function bindToQuery($mysqli,&$query,&$values){
