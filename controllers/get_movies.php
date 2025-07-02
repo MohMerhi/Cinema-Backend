@@ -11,7 +11,7 @@ $response = [];
 $response["status"] = 200;
 
 if(!isset($_GET["id"])){
-    $movies = Movies::all($mysqli);
+    $movies = Movie::all($mysqli);
     foreach($movies as $m){
         $response["movies"][] = $m->toArray();
     }

@@ -1,7 +1,7 @@
 <?php 
 
 
-class Customers extends Model{
+class Customer extends Model{
     private int $id;
     private string $username;
     private string $first_name;

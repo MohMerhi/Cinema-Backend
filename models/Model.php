@@ -29,11 +29,14 @@ abstract class Model{
     }
 
     public static function findByValues(mysqli $mysqli, array $values){
+        $types = "";
+        $params = [];
         $valuesInQuery = static::sqlValueForm($values," and ");
         $sql = sprintf("Select * from %s where %s",static::$table, $valuesInQuery);
         
         $query= $mysqli->prepare($sql);
-        static::bindToQuery($mysqli, $query,$values);
+        static::bindToQuery($values, $types, $params);
+        $query->bind_param($types,...$params);
         $query->execute();
         $data = $query->get_result();
         $objects = [];
@@ -44,14 +47,18 @@ abstract class Model{
     }
 
     public function update(mysqli $mysqli, array $values, int $id){
+        $types = "";
+        $params = [];
         $valuesInQuery = static::sqlValueForm($values,",");
         $sql = sprintf("Update %s set %s where %s = ?", 
             static::$table,
             $valuesInQuery,
             $id);
         $query = $mysqli->prepare($sql);
-        static::bindToQuery($mysqli,$query,$values);
-        $query->bind_param('i',$id);
+        static::bindToQuery($values, $types, $params);
+        $types = $types.'i';
+        $params[] = $id;
+        $query->bind_param($types,...$params);
         $query->execute();
         //$data = $query->get_result()->fetch_assoc();
 
@@ -69,11 +76,14 @@ abstract class Model{
         
         $columnNames = "";
         $columnValues = "";
+        $types = "";
+        $params = [];
         static::creationColumnForm($values, $columnNames, $columnValues);
         $sql = sprintf("INSERT INTO %s (%s) VALUES (%s)", static::$table, $columnNames, $columnValues);
-        $query = $mysqli->prepare($sql);
+        $query = $mysqli->prepare($sql,);
         
-        static::bindToQuery($mysqli, $query, $values);
+        static::bindToQuery( $values, $types, $params);
+        $query->bind_param($types,...$params);
         $query->execute();
         
     }
@@ -98,7 +108,7 @@ abstract class Model{
 
     }
 
-    public static function bindToQuery($mysqli,&$query,&$values){
+    public static function bindToQuery(&$values, &$type, &$params){
         $type = "";
         $params = [];
         foreach($values as $key => $value){
@@ -114,6 +124,5 @@ abstract class Model{
             }
             $params[] = $value;
         } 
-        $query->bind_param($type,...$params);
     }
 }

@@ -11,25 +11,25 @@ require("../connection/connection.php");
 $response = [];
 
 
-if(!isset($_POST["username"]) || Customers::findByValues($mysqli,["username" => $_POST["username"]])){
+if(!isset($_POST["username"]) || Customer::findByValues($mysqli,["username" => $_POST["username"]])){
     $response["status"] = 302;
-    $response["message"] = "username already taken";
+    $response["message"] = "username already taken or invalid";
 }
 
-else if(!isset($_POST["email"]) || Customers::findByValues($mysqli,["email" => $_POST["email"]])){
+else if(!isset($_POST["email"]) || Customer::findByValues($mysqli,["email" => $_POST["email"]])){
     $response["status"] = 302;
-    $response["message"] = "email already taken";
+    $response["message"] = "email already taken or invalid";
 
 }
 
-else if(!isset($_POST["phone_number"]) || Customers::findByValues($mysqli,["phone_number" => $_POST["phone_number"]])){
+else if(!isset($_POST["phone_number"]) || Customer::findByValues($mysqli,["phone_number" => $_POST["phone_number"]])){
     $response["status"] = 302;
-    $response["message"] = "phone_number already taken";
+    $response["message"] = "phone_number already taken or invalid";
 
 }
 
 else {
-    Customers::create($mysqli,[
+    Customer::create($mysqli,[
             "username" => $_POST["username"],
             "first_name" => $_POST["first_name"],
             "last_name" => $_POST["last_name"],

@@ -1,6 +1,6 @@
 <?php
 
-class Movies extends Model{
+class Movie extends Model{
     private int $id;
     private string $title;
     private string $description;
